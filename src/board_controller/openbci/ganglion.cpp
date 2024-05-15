@@ -382,31 +382,24 @@ void Ganglion::decompress_firmware_3 (
     }
 
     // 18 bit compression, sends 17 MSBs + sign bit of 24-bit sample
-    if (data->data[0] >= 0 && data->data[0] < 100)
+    int last_digit = data->data[0] % 10;
+    switch (last_digit)
     {
-        int last_digit = data->data[0] % 10;
-        switch (last_digit)
-        {
-            // accel data is signed, so we must cast it to signed char
-            // swap x and z, and invert z to convert to standard coordinate space.
-            case 0:
-                acceleration[2] = -accel_scale * (char)data->data[19];
-                break;
-            case 1:
-                acceleration[1] = accel_scale * (char)data->data[19];
-                break;
-            case 2:
-                acceleration[0] = accel_scale * (char)data->data[19];
-                break;
-            default:
-                break;
-        }
-        bits_per_num = 18;
+        // accel data is signed, so we must cast it to signed char
+        // swap x and z, and invert z to convert to standard coordinate space.
+        case 0:
+            acceleration[2] = -accel_scale * (char)data->data[19];
+            break;
+        case 1:
+            acceleration[1] = accel_scale * (char)data->data[19];
+            break;
+        case 2:
+            acceleration[0] = accel_scale * (char)data->data[19];
+            break;
+        default:
+            break;
     }
-    else if (data->data[0] >= 100 && data->data[0] < 200)
-    {
-        bits_per_num = 19;
-    }
+    bits_per_num = 18;
 
     // handle compressed data for 18 or 19 bits
     for (int i = 8, counter = 0; i < bits_per_num * 8; i += bits_per_num, counter++)
